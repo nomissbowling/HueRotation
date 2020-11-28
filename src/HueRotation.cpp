@@ -74,7 +74,7 @@ string drift(int ac, char **av)
     cv::imshow(wn[0], frm);
     cv::Mat gr, hsv;
     cv::cvtColor(frm, gr, CV_BGR2GRAY);
-    cv::GaussianBlur(gr, gr, cv::Size(17, 17), 1.5, 1.5);
+    cv::GaussianBlur(gr, gr, cv::Size(7, 7), 1.5, 1.5);
     cv::LUT(gr, gammaLUT, gr);
     cv::cvtColor(gr, gr, CV_GRAY2BGR);
     cv::imshow(wn[1], gr);
@@ -86,7 +86,8 @@ string drift(int ac, char **av)
       uchar *r = pl[2].ptr<uchar>(j);
       for(int i = 0; i < gr.cols; ++i){
         //uchar s = 76, e = 255, hue = b[i] - 76; // 76-255 -> 0-179
-        uchar s = 166, e = 255, hue = 2 * (b[i] - 166); // 166-255 -> 0-179
+        //uchar s = 166, e = 255, hue = 2 * (b[i] - 166); // 166-255 -> 0-179
+        uchar s = 165, e = 254, hue = 2 * (b[i] - 165); // 165-254 -> 0-179
         //uchar s = 211, e = 255, hue = 4 * (b[i] - 211); // 211-255 -> 0-179
         //uchar s = 210, e = 254, hue = 4 * (b[i] - 210); // 210-254 -> 0-179
         //uchar s = 232, e = 254, hue = 8 * (b[i] - 232); // 232-254 -> 0-179
@@ -99,6 +100,7 @@ string drift(int ac, char **av)
     cv::merge(pl, hsv);
     cv::cvtColor(hsv, hsv, CV_HSV2BGR); // assume BGR as HSV
     cv::imshow(wn[2], hsv); // hsv.channels() == 3
+#if 0
     cv::Mat im(gr.rows, gr.cols, CV_8UC4);
     vector<cv::Mat> pa; // B G R A planes
     cv::split(im, pa);
@@ -108,6 +110,10 @@ string drift(int ac, char **av)
     pa[2] = pl[2];
     pa[3] = 255;
     cv::merge(pa, im);
+#else
+    cv::Mat im(frm);
+    hsv.copyTo(im, pl[2]);
+#endif
     wr << im;
     cv::imshow(wn[3], im);
     ++cnt;
