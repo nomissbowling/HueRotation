@@ -35,9 +35,19 @@ cv::Mat mkGammaLUT(double g)
   return lut;
 }
 
+cv::Mat mkRotGammaLUT(double g)
+{
+  cv::Mat lut(1, 256, CV_8U);
+  uchar *p = lut.data;
+  for(int i = 0; i < lut.cols; ++i)
+    p[i] = 255 - cv::saturate_cast<uchar>(255.0 * pow((255 - i) / 255.0, g));
+  return lut;
+}
+
 string drift(int ac, char **av)
 {
-  cv::Mat gammaLUT = mkGammaLUT(2.2); // (1 / 2.2);
+  // cv::Mat gammaLUT = mkGammaLUT(2.2); // (1 / 2.2);
+  cv::Mat gammaLUT = mkRotGammaLUT(2.2); // (1 / 2.2);
   vector<string> wn({"original", "gray", "Hue", "Alpha"});
   for(vector<string>::iterator i = wn.begin(); i != wn.end(); ++i)
     cv::namedWindow(*i, CV_WINDOW_AUTOSIZE | CV_WINDOW_FREERATIO);
@@ -75,7 +85,8 @@ string drift(int ac, char **av)
       uchar *g = pl[1].ptr<uchar>(j);
       uchar *r = pl[2].ptr<uchar>(j);
       for(int i = 0; i < gr.cols; ++i){
-        uchar s = 76, e = 255, hue = b[i] - 76; // 76-255 -> 0-179
+        //uchar s = 76, e = 255, hue = b[i] - 76; // 76-255 -> 0-179
+        uchar s = 166, e = 255, hue = 2 * (b[i] - 166); // 166-255 -> 0-179
         //uchar s = 211, e = 255, hue = 4 * (b[i] - 211); // 211-255 -> 0-179
         //uchar s = 210, e = 254, hue = 4 * (b[i] - 210); // 210-254 -> 0-179
         //uchar s = 232, e = 254, hue = 8 * (b[i] - 232); // 232-254 -> 0-179
