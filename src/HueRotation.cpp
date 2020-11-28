@@ -26,8 +26,18 @@
 
 using namespace huerotation;
 
+cv::Mat mkGammaLUT(double g)
+{
+  cv::Mat lut(1, 256, CV_8U);
+  uchar *p = lut.data;
+  for(int i = 0; i < lut.cols; ++i)
+    p[i] = cv::saturate_cast<uchar>(255.0 * pow(i / 255.0, g));
+  return lut;
+}
+
 string drift(int ac, char **av)
 {
+  cv::Mat gammaLUT = mkGammaLUT(2.2); // (1 / 2.2);
   vector<string> wn({"original", "gray", "Hue", "Alpha"});
   for(vector<string>::iterator i = wn.begin(); i != wn.end(); ++i)
     cv::namedWindow(*i, CV_WINDOW_AUTOSIZE | CV_WINDOW_FREERATIO);
@@ -36,10 +46,16 @@ string drift(int ac, char **av)
   double fps = 30.0;
   cv::VideoCapture cap(cv::CAP_DSHOW + cam_id); // use DirectShow
   if(!cap.isOpened()) return "error: open camera";
+  // cout << cv::getBuildInformation() << endl;
   if(!cap.set(cv::CAP_PROP_FRAME_WIDTH, width)) cout << "width err" << endl;
   if(!cap.set(cv::CAP_PROP_FRAME_HEIGHT, height)) cout << "height err" << endl;
   if(!cap.set(cv::CAP_PROP_FPS, fps)) cout << "fps err" << endl;
-  fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+  // fourcc = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+  // fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+  // fourcc = cv::VideoWriter::fourcc('X', 'V', 'I', 'D');
+  // fourcc = cv::VideoWriter::fourcc('D', 'I', 'V', 'X');
+  // fourcc = cv::VideoWriter::fourcc('X', '2', '6', '4');
+  fourcc = 0x00000020; // fallback tag
   bool col = true;
   cv::VideoWriter wr("HueRot.mp4", fourcc, fps, cv::Size(width, height), col);
   int cnt = 0;
@@ -49,6 +65,7 @@ string drift(int ac, char **av)
     cv::Mat gr, hsv;
     cv::cvtColor(frm, gr, CV_BGR2GRAY);
     cv::GaussianBlur(gr, gr, cv::Size(17, 17), 1.5, 1.5);
+    cv::LUT(gr, gammaLUT, gr);
     cv::cvtColor(gr, gr, CV_GRAY2BGR);
     cv::imshow(wn[1], gr);
     vector<cv::Mat> pl; // B G R planes
