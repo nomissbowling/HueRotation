@@ -94,7 +94,7 @@ string drift(int ac, char **av)
         bool f = (b[i] >= s) && (b[i] <= e);
         b[i] = cv::saturate_cast<uchar>((cnt + 179 - hue) % 180); // H
         g[i] = cv::saturate_cast<uchar>(f ? 255 : 0); // S
-        r[i] = cv::saturate_cast<uchar>(f ? 255 : 0); // V
+        r[i] = cv::saturate_cast<uchar>(255 - b[i]); // V
       }
     }
     cv::merge(pl, hsv);
@@ -112,8 +112,8 @@ string drift(int ac, char **av)
     cv::merge(pa, im);
 #else
     cv::Mat im(frm);
-    hsv.copyTo(im, pl[2]);
-    cv::addWeighted(frm, 0.9, im, 0.1, 0.0, im);
+    hsv.copyTo(im, pl[1]);
+    cv::addWeighted(frm, 0.5, im, 0.5, 0.0, im);
 #endif
     wr << im;
     cv::imshow(wn[3], im);
