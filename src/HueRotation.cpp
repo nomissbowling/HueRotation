@@ -86,6 +86,12 @@ string drift(int ac, char **av)
       uchar *s = pl[1].ptr<uchar>(j);
       uchar *v = pl[2].ptr<uchar>(j);
       for(int i = 0; i < hsv.cols; ++i){
+#if 1
+        int x = i - hsv.cols / 2, y = j - hsv.rows / 2;
+        int w = x * x + y * y, z = hsv.cols * hsv.rows / 16;
+        uchar hue = w >= z ? h[i] : 180 - 180 * w / z;
+        h[i] = cv::saturate_cast<uchar>(hue % 180); // H
+#else
         // bool f = ( >= s) && ( <= e);
         uchar t = *u++;
         bool f = t >= 166;
@@ -93,6 +99,7 @@ string drift(int ac, char **av)
         h[i] = cv::saturate_cast<uchar>((179 - hue) % 180); // H
         s[i] = cv::saturate_cast<uchar>(f ? s[i] : 0); // S
         v[i] = cv::saturate_cast<uchar>(v[i]); // V
+#endif
       }
     }
     cv::merge(pl, hsv);
