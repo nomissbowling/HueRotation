@@ -51,7 +51,7 @@ string drift(int ac, char **av)
   vector<string> wn({"original", "gray", "Hue", "Alpha"});
   for(vector<string>::iterator i = wn.begin(); i != wn.end(); ++i)
     cv::namedWindow(*i, CV_WINDOW_AUTOSIZE | CV_WINDOW_FREERATIO);
-  int cam_id = 1; // 0; // may be 'ManyCam Virtual Webcam'
+  int cam_id = 0; // 1; // 0; // may be 'ManyCam Virtual Webcam'
   int width = 640, height = 480, fourcc;
   double fps = 30.0;
   cv::VideoCapture cap(cv::CAP_DSHOW + cam_id); // use DirectShow
@@ -88,8 +88,14 @@ string drift(int ac, char **av)
       for(int i = 0; i < hsv.cols; ++i){
 #if 1
         int x = i - hsv.cols / 2, y = j - hsv.rows / 2;
-        int w = x * x + y * y, z = hsv.cols * hsv.rows / 16;
-        uchar hue = w >= z ? h[i] : 180 - 180 * w / z;
+        int w = x * x + y * y, p = hsv.cols * hsv.rows / 16;
+        int q = p / 4;
+#if 0
+        uchar t = (uchar)(179 * (w - q) / (p - q));
+#else
+        uchar t = (uchar)(179 * (sqrt(w) - sqrt(q)) / (sqrt(p) - sqrt(q)));
+#endif
+        uchar hue = w > p || w < q ? h[i] : 179 - ((t + 15) % 180);
         h[i] = cv::saturate_cast<uchar>(hue % 180); // H
 #else
         // bool f = ( >= s) && ( <= e);
