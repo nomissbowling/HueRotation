@@ -90,13 +90,22 @@ string drift(int ac, char **av)
         int x = i - hsv.cols / 2, y = j - hsv.rows / 2;
         int w = x * x + y * y, p = hsv.cols * hsv.rows / 16;
         int q = p / 4;
+        bool f = w > p || w < q;
+        uchar hue = h[i];
 #if 0
-        uchar t = (uchar)(179 * (w - q) / (p - q));
+        if(!f){
+          uchar t = (uchar)(179 * (w - q) / (p - q));
+          hue = 179 - ((t + 15) % 180);
+        }
 #else
-        uchar t = (uchar)(179 * (sqrt(w) - sqrt(q)) / (sqrt(p) - sqrt(q)));
+        if(!f){
+          uchar t = (uchar)(179 * (sqrt(w) - sqrt(q)) / (sqrt(p) - sqrt(q)));
+          hue = 179 - ((t + 15) % 180);
+        }
 #endif
-        uchar hue = w > p || w < q ? h[i] : 179 - ((t + 15) % 180);
         h[i] = cv::saturate_cast<uchar>(hue % 180); // H
+        s[i] = cv::saturate_cast<uchar>(f ? s[i] : 96); // S
+        // v[i] = cv::saturate_cast<uchar>(v[i]); // V
 #else
         // bool f = ( >= s) && ( <= e);
         uchar t = *u++;
