@@ -80,6 +80,7 @@ string drift(int ac, char **av)
     cv::cvtColor(frm, hsv, CV_BGR2HSV);
     vector<cv::Mat> pl; // H S V planes
     cv::split(hsv, pl);
+    double e = 2 - cos((cnt % 1080) * CV_PI / 180); // M_PI
     uchar z = (uchar)(144 + 48 * sin((cnt % 360) * CV_PI / 180)); // M_PI
     uchar *u = gr.data;
     for(int j = 0; j < hsv.rows; ++j){
@@ -89,7 +90,7 @@ string drift(int ac, char **av)
       for(int i = 0; i < hsv.cols; ++i){
 #if 1
         int x = i - hsv.cols / 2, y = j - hsv.rows / 2;
-        int w = x * x + y * y, p = hsv.cols * hsv.rows / 16;
+        int w = x * x + y * y, p = (int)(hsv.cols * hsv.rows * e / 16);
         int q = p / 4;
         bool f = w > p || w < q;
         uchar hue = h[i];
