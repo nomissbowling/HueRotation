@@ -92,7 +92,7 @@ string drift(int ac, char **av)
         int x = i - hsv.cols / 2, y = j - hsv.rows / 2;
         int w = x * x + y * y, p = (int)(hsv.cols * hsv.rows * e / 16);
         int q = p / 4;
-        bool f = w > p || w < q;
+        bool f = w > p || w < q, o = true;
         uchar hue = h[i];
         if(!f){
 #if 0
@@ -101,9 +101,11 @@ string drift(int ac, char **av)
           uchar t = (uchar)(179 * (sqrt(w) - sqrt(q)) / (sqrt(p) - sqrt(q)));
 #endif
           hue = 179 - ((t + 15) % 180);
+          if(hue > 135) o = false; // 270 < Hue < 360
         }
-        h[i] = cv::saturate_cast<uchar>(hue % 180); // H
-        s[i] = cv::saturate_cast<uchar>(f ? s[i] : z); // S
+        uchar n = s[i]; // (z + s[i]) / 2;
+        h[i] = cv::saturate_cast<uchar>((o ? hue : h[i]) % 180); // H
+        s[i] = cv::saturate_cast<uchar>(f ? s[i] : (o ? z : n)); // S
         // v[i] = cv::saturate_cast<uchar>(v[i]); // V
 #else
         // bool f = ( >= s) && ( <= e);
