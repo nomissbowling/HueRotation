@@ -80,7 +80,7 @@ string drift(int ac, char **av)
     cv::cvtColor(frm, hsv, CV_BGR2HSV);
     vector<cv::Mat> pl; // H S V planes
     cv::split(hsv, pl);
-    double e = 2 - cos((cnt % 1080) * CV_PI / 180); // M_PI
+    double e = 2 - cos((cnt % (int)(360 * 3.3)) * CV_PI / 180); // M_PI
     uchar z = (uchar)(144 + 48 * sin((cnt % 360) * CV_PI / 180)); // M_PI
     uchar *u = gr.data;
     for(int j = 0; j < hsv.rows; ++j){
@@ -104,7 +104,7 @@ string drift(int ac, char **av)
           if(hue > 135) o = false; // 270 < Hue < 360
         }
         uchar n = s[i]; // (z + s[i]) / 2;
-        h[i] = cv::saturate_cast<uchar>((o ? hue : h[i]) % 180); // H
+        h[i] = cv::saturate_cast<uchar>((o ? cnt + hue : h[i]) % 180); // H
         s[i] = cv::saturate_cast<uchar>(f ? s[i] : (o ? z : n)); // S
         // v[i] = cv::saturate_cast<uchar>(v[i]); // V
 #else
